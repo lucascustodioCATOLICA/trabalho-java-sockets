@@ -14,4 +14,36 @@ public class WorkerServer {
         this.metadeSuperior = metadeSuperior;
         carregarBaseDados();
     }
+    
+    private void carregarBaseDados() {
+        try {
+            String conteudo = new String(java.nio.file.Files.readAllBytes(
+                    java.nio.file.Paths.get("dados_servidor_c.json")));
+            JSONArray jsonArray = new JSONArray(conteudo);
+
+            int meio = jsonArray.length() / 2;
+            baseDados = new ArrayList<>();
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                if ((metadeSuperior && i >= meio) || (!metadeSuperior && i < meio)) {
+                    baseDados.add(jsonArray.getJSONObject(i));
+                }
+            }
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+            baseDados = new ArrayList<>();
+        }
+    }
+
+    public void iniciar() {
+        try (ServerSocket serverSocket = new ServerSocket(porta)) {
+            System.out.println("Worker " + (metadeSuperior ? "Superior" : "Inferior") + " escutando na porta " + porta);
+            while (true) {
+                Socket socket = serverSocket.accept();
+                new Thread(() -> tratarCliente(socket)).start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
