@@ -46,4 +46,20 @@ public class WorkerServer {
             e.printStackTrace();
         }
     }
+    private void tratarCliente(Socket socket) {
+        try (
+            BufferedReader entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter saida = new PrintWriter(socket.getOutputStream(), true)
+        ) {
+            String termo = entrada.readLine();
+            for (JSONObject obj : baseDados) {
+                if (obj.getString("title").toLowerCase().contains(termo.toLowerCase()) ||
+                    obj.getString("abstract").toLowerCase().contains(termo.toLowerCase())) {
+                    saida.println(obj.toString());
+                }
+            }
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+    }
 }
